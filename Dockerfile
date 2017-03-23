@@ -12,23 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.6
-
-MAINTAINER Quentin Machu <quentin.machu@coreos.com>
-
-RUN apt-get update && \
-    apt-get install -y bzr rpm xz-utils && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* # 18MAR2016
+FROM golang:1.8-alpine
 
 VOLUME /config
-
 EXPOSE 6060 6061
 
 ADD .   /go/src/github.com/coreos/clair/
 WORKDIR /go/src/github.com/coreos/clair/
 
-RUN go install -v github.com/coreos/clair/cmd/clair
+RUN apk add --no-cache git bzr rpm xz && \
+    go install -v github.com/coreos/clair/cmd/clair && \
+    mv /go/bin/clair /clair && \
+    rm -rf /go /usr/local/go
 
-ENTRYPOINT ["clair"]
+ENTRYPOINT ["/clair"]
